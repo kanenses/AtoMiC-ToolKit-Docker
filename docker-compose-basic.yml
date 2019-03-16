@@ -163,6 +163,53 @@ services:
       - UMASK_SET=002
       - WEBUI_PORT=XXXX
 
+  rutorrent:
+    image: linuxserver/rutorrent
+    container_name: rutorrent
+    restart: always
+    ports:
+      - 88:80      
+      - 5000:5000
+      - 51413:51413
+      - 6881:6881/udp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${USERDIR}/media/:/media
+      - ${USERDIR}/downloads:/data/watch
+      - ${USERDIR}/downloads/completed:/data/completed
+      - ${USERDIR}/downloads/incomplete:/data/incomplete
+      - ${USERDIR}/docker/rutorrent/config:/config
+      - ${USERDIR}/docker/shared:/shared
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}      
+      - TZ=${TZ}
+      - RUTORRENT_INCOMPLETE_DIR=/downloads/incomplete
+      - RUTORRENT_INCOMPLETE_DIR_ENABLED=true
+      - RUTORRENT_WATCH_DIR=/downloads
+      - RUTORRENT_WATCH_DIR_ENABLED=true
+      - RUTORRENT_DOWNLOAD_DIR=/downloads/completed
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=rutorrent"
+#      - "traefik.frontend.rule=Host:portainer.${DOMAINNAME}"  
+      - "traefik.frontend.rule=Host:${DOMAINNAME}; PathPrefixStrip: /rutorrent"
+      - "traefik.port=80"
+      - "traefik.docker.network=web"
+      - "traefik.frontend.headers.SSLRedirect=true"
+      - "traefik.frontend.headers.STSSeconds=315360000"
+      - "traefik.frontend.headers.browserXSSFilter=true"
+      - "traefik.frontend.headers.contentTypeNosniff=true"
+      - "traefik.frontend.headers.forceSTSHeader=true"
+      - "traefik.frontend.headers.SSLHost=example.com"
+      - "traefik.frontend.headers.STSIncludeSubdomains=true"
+      - "traefik.frontend.headers.STSPreload=true"
+      - "traefik.frontend.headers.frameDeny=true"
+
+
 # SABnzbd – Usenet (NZB) Downloader
   sabnzbd:
     image: "linuxserver/sabnzbd"
